@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Detección de Anomalías en Transacciones Financieras</title>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        .form-group label {
+            font-weight: bold;
+        }
+
+        #result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h2 class="card-title mb-0">Detección de Anomalías en Transacciones Financieras</h2>
+            </div>
+            <div class="card-body">
+                <form id="prediction-form">
+                    <div class="form-group">
+                        <label for="cliente">Seleccionar Cliente</label>
+                        <select class="form-control" id="cliente" name="cliente_id">
+                            <option value="" disabled selected>Seleccione un cliente</option>
+                            {% for cliente in clientes %}
+                            <option value="{{ cliente['cliente_id'] }}">{{ cliente['cliente_id'] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="monto">Monto</label>
+                        <input type="number" class="form-control" id="monto" name="monto" placeholder="Ingrese el monto de la transacción">
+                    </div>
+                    <div class="form-group">
+                        <label for="hora">Hora</label>
+                        <input type="time" class="form-control" id="hora" name="hora" placeholder="Ingrese la hora de la transacción">
+                    </div>
+                    <div class="form-group">
+                        <label for="tipo_transaccion">Tipo de Transacción</label>
+                        <input type="text" class="form-control" id="tipo_transaccion" name="tipo_transaccion" placeholder="Ingrese el tipo de transacción">
+                    </div>
+                    <div class="form-group">
+                        <label for="geolocalizacion">Geolocalización</label>
+                        <input type="text" class="form-control" id="geolocalizacion" name="geolocalizacion" placeholder="Ingrese la geolocalización">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Predecir</button>
+                </form>
+                <div id="result"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        $('#prediction-form').on('submit', function (event) {
+            event.preventDefault();
+            var formData = {
+                cliente_id: $('#cliente').val(),
+                transaccion: {
+                    monto: $('#monto').val(),
+                    hora: $('#hora').val(),
+                    tipo_transaccion: $('#tipo_transaccion').val(),
+                    geolocalizacion: $('#geolocalizacion').val()
+                }
+            };
+
+            $.ajax({
+                url: '/predict',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: function (response) {
+                    var resultHtml;
+                    if (response.anomalous) {
+                        resultHtml = '<div class="alert alert-danger">Transacción Anómala</div>';
+                    } else {
+                        resultHtml = '<div class="alert alert-success">Transacción Normal</div>';
+                    }
+                    $('#result').html(resultHtml);
+                },
+                error: function () {
+                    $('#result').html('<div class="alert alert-warning">Ocurrió un error al realizar la predicción. Intente nuevamente.</div>');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

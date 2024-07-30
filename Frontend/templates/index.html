@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detección de Anomalías en Transacciones</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Detección de Anomalías en Transacciones</h1>
+        <form id="transactionForm">
+            <label for="Horas">Hora (HH:MM:SS):</label>
+            <input type="time" id="Horas" name="Horas" step="1" required>
+
+            <label for="Dia_Semana">Día de la Semana (0-6):</label>
+            <input type="number" id="Dia_Semana" name="Dia_Semana" min="0" max="6" required>
+
+            <label for="Mes">Mes (1-12):</label>
+            <input type="number" id="Mes" name="Mes" min="1" max="12" required>
+
+            <label for="Dia_Mes">Día del Mes (1-31):</label>
+            <input type="number" id="Dia_Mes" name="Dia_Mes" min="1" max="31" required>
+
+            <label for="Cod_Cliente">Código del Cliente:</label>
+            <input type="number" id="Cod_Cliente" name="Cod_Cliente" required>
+
+            <label for="Transaccion">Transacción:</label>
+            <input type="text" id="Transaccion" name="Transaccion" required>
+
+            <label for="Valor">Valor:</label>
+            <input type="number" id="Valor" name="Valor" required>
+
+            <button type="submit">Enviar</button>
+        </form>
+
+        <div id="result" class="result">
+            <!-- Aquí se mostrará el resultado -->
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('transactionForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const data = {
+                Horas: form.Horas.value,  // Mantener el formato de HH:MM:SS
+                Dia_Semana: parseInt(form.Dia_Semana.value),
+                Mes: parseInt(form.Mes.value),
+                Dia_Mes: parseInt(form.Dia_Mes.value),
+                Cod_Cliente: parseInt(form.Cod_Cliente.value),
+                Transaccion: form.Transaccion.value,
+                Valor: parseFloat(form.Valor.value)
+            };
+
+            console.log('Sending data:', data);  // Añadir para depuración
+
+            try {
+                const response = await fetch('http://localhost:5000/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                document.getElementById('result').innerText = JSON.stringify(result, null, 2);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerText = 'Error: ' + error;
+            }
+        });
+    </script>
+</body>
+</html>
